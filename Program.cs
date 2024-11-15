@@ -636,5 +636,3 @@ class Bank
     }
 }
 //End of the program.
-//Test 1
-//Test 2 - Web
