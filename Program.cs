@@ -39,9 +39,9 @@ class Bank
     private void InitializePreStoredUsers()
     // This method creates the pre-stored user [Joe.Doe]
     {
-        var joeDoe = new UserDetails("Mr.", "Joe Doe", 30, "joe.doe@example.com", "+614123456789", "Password123");
+        var joeDoe = new UserDetails("Mr.", "Joe Doe", 30, "joe.doe@example.com", "+614123456789", "Password123", 1500.50m);
         users["Joe.Doe"] = joeDoe;
-        // We create the user [Joe.Doe] with predefined details and store it in the [users] Dictionary.
+        // We create the user [Joe.Doe] with predefined details and store it in the [users] Dictionary. We added a pre-set Balance of $1,500.50 AUD.
     }
     private void DisplayWelcomeScreen()
     // We define a method that only this class can use (private) and that does not return any value (void).
@@ -115,7 +115,7 @@ class Bank
         Console.Clear();
         // This is to clear the screen and create a neat interface for the user.
 
-        Console.WriteLine("Welcome to the sign-up process!");
+        Console.WriteLine("Welcome to the sign-up process!\n_______________________________");
         // We display a welcome message to the sign-up process.
 
         string prefix;
@@ -155,7 +155,7 @@ class Bank
             if (ValidateFullName(fullName)) break;
             /*
             We call the method [ValidateFullName] which checks whether fullName variable meets the criteria or not.
-            This method is explained later on, please see line number: 
+            This method is explained later on, please see line number: 673.
             If the name meets the criteria, we exit the loop and proceed to the next one.
             */
 
@@ -203,7 +203,7 @@ class Bank
             if (IsValidEmail(email)) break;
             /*
             We call the method [IsValidEmail] which checks whether email variable meets the criteria or not.
-            This method is explained later on, please see line number: 
+            This method is explained later on, please see line number: 689.
             If the email meets the criteria, we exit the loop and proceed to the next one.
             */
 
@@ -279,7 +279,7 @@ class Bank
             if (IsValidPassword(password)) break;
             /*
             We call the method [IsValidPassword] which checks whether password variable meets the criteria or not.
-            This method is explained later on, please see line number: 
+            This method is explained later on, please see line number: 717.
             If the password meets the criteria, we exit the loop and proceed to the next one.
             */
 
@@ -353,8 +353,12 @@ class Bank
                 If both [inputUsername] and [password] meet the criteria, we exit the loop.
                 */
                 {
+                    users[inputUsername].SessionDepositCount = 0;
+                    // We reset the deposit limit per session after the user logs-out and logs back in.
+
                     MainScreen(inputUsername);
                     isLoggedIn = true;
+
                     break;
                     /* 
                     Upon exiting the loop, we call the MainScreen for [inputUsername].
@@ -408,18 +412,18 @@ class Bank
             We create a variable [user] that will retrieve the user details of the current user [inputUsername] and store them in the variable itself.
             */
 
-            Console.WriteLine($"Hello {user.FullName}, welcome back!\n");
+            Console.WriteLine($"Hello {user.FullName}, welcome back!\n_______________________________\n");
             // We display a welcome message using the user [FullName] retrieved from [users] Dictionary using an interpolate string [$].
 
-            Console.WriteLine("1. View balance (coming soon)");
-            Console.WriteLine("2. Make a deposit (coming soon)");
+            Console.WriteLine("1. View balance");
+            Console.WriteLine("2. Make a deposit");
             Console.WriteLine("3. Withdraw money (coming soon)");
             Console.WriteLine("4. Make a bank transfer (coming soon)");
             Console.WriteLine("5. Update personal details");
             Console.WriteLine("6. Log-out");
             // We display the Main Screen and the available options (only 5 and 6 work).
 
-            Console.Write("\nPlease pick an option: ");
+            Console.Write("_______________________________\nPlease choose an option: ");
             // We prompt user to pick an option.
 
             string choice = Console.ReadLine();
@@ -429,11 +433,27 @@ class Bank
             // We start a [switch] statement to handle different user choices.
             {
                 case "1":
+                    ViewBalance(inputUsername);
+                    /*
+                    If user picks option [1] we call the [ViewBalance] method.
+                    This method is explained later on, please see line number: 494.
+                    */
+
+                    break;
+
                 case "2":
+                    MakeDeposit(inputUsername);
+                    /*
+                    If user picks option [2] we call the [MakeDeposit] method.
+                    This method is explained later on, please see line number: 513.
+                    */
+
+                    break;
+
                 case "3":
                 case "4":
                     Console.WriteLine("\nFeature coming soon!");
-                    // For options from 1-4 we notify user that the feature is not yet available.
+                    // For options from 3-4 we notify user that the feature is not yet available.
 
                     Console.WriteLine("Press any key to continue...");
                     // We prompt for key press before clearing.
@@ -448,7 +468,7 @@ class Bank
                     UpdateDetails(inputUsername);
                     /*
                     If user picks option [5] we call the [UpdateDetails] method.
-                    This method is explained later on, please see line number: 
+                    This method is explained later on, please see line number: 640.
                     */
 
                     break;
@@ -471,11 +491,160 @@ class Bank
             }
         }
     }
+    private void ViewBalance(string inputUsername)
+    // We create the ViewBalance method for the logged in user [inputUsername].
+    {
+        var user = users[inputUsername];
+
+        Console.Clear();
+        Console.WriteLine("Account Balance:\n_______________________________\n");
+
+        Console.WriteLine($"Your current balance is: ${user.Balance:N2} AUD");
+        Console.WriteLine("\nPress any key to return to the Main Screen...");
+        Console.ReadKey();
+        /*            
+        We clear the Main Screen and move onto the View Balance screen.
+        We create a variable [user] that will retrieve the user details of the current user [inputUsername] and store them in the variable itself.
+        We display the [inputUsername] Balance stored in the [users] dictionary.
+        We call the variable [user] and display its Balance using an interpolated string [$].
+        We use the [N2] format to specify that the amount should be displayed with two [2] digits after the decimal point.
+        */
+    }
+    public void MakeDeposit(string inputUsername)
+    // We create the MakeDeposit method for the logged in user [inputUsername].
+    {
+        const decimal TransactionLimit = 15000m;
+        const decimal DailyLimit = 100000m;
+        const int MaxDepositsPerSession = 5;
+        // We create 3 constants that establish a Transaction Limit, Daily Limit and Max. Deposits per Session.
+
+        var user = users[inputUsername];
+        // We create a variable [user] that will retrieve the user details of the current user [inputUsername] and store them in the variable itself.
+
+        if (user.DepositStartTime == DateTime.MinValue || DateTime.Now >= user.DepositStartTime.AddHours(24))
+        // We check if the DepositStartTime has not been set (i.e., it's still the default value).
+        {
+            user.DailyDepositTotal = 0;
+            user.DepositStartTime = DateTime.Now;
+            /*
+            We reset the DailyDepositTotal to 0 if 24 hours have passed or if it's the user's first deposit.
+            We set DepositStartTime to the current time to start a new 24-hour period.
+            */
+        }
+        Console.Clear();
+        Console.WriteLine("Disclaimer:\n_______________________________\n");
+        Console.WriteLine($"Maximum transaction limit per deposit: ${TransactionLimit:N2} AUD");
+        Console.WriteLine($"Maximum daily deposit limit: ${DailyLimit:N2} AUD");
+        Console.WriteLine($"Maximum number of deposits per session: {MaxDepositsPerSession}");
+        Console.WriteLine("\nPlease ensure you are aware of these limits.\n");
+        Console.WriteLine("Press any key to agree with the disclaimer and continue...");
+        Console.ReadKey();
+        // We clear the screen and display a disclaimer with the deposit limits and ask the user to acknowledge using interpolated strings [$] and press a key to continue.
+
+        if (user.SessionDepositCount >= MaxDepositsPerSession)
+        // We check if the user has reached the maximum number of deposits for the current session
+        {
+            Console.Clear();
+            Console.WriteLine($"You have reached the maximum number of deposits ({MaxDepositsPerSession}) for this session.\nPlease log-out to reset your counter.");
+            Console.WriteLine("\nPress any key to return to the Main Screen...");
+            Console.ReadKey();
+            // We clear the screen, inform the user that has exceeded the maximum deposit count for this session, advice to logout to reset the counter and ask to press a key to continue using interpolated strings [$].
+
+            return;
+            // We terminate the loop.
+        }
+        while (true)
+        {
+            decimal remainingDailyLimit = DailyLimit - user.DailyDepositTotal;
+            int remainingSessionDeposits = MaxDepositsPerSession - user.SessionDepositCount;
+            // We calculate the remaining daily deposit limit for the user and how many more deposits the user can make in this session.
+
+            Console.Clear();
+            Console.WriteLine($"Remaining daily deposit limit: ${remainingDailyLimit:N2} AUD");
+            Console.WriteLine($"Remaining deposits for this session: {remainingSessionDeposits} deposits\n_______________________________\n");
+            // We clear the screen for the user and display remaining deposit limit and deposits for this session using interpolated strings [$].
+
+            if (remainingDailyLimit <= 0)
+            // We check if the daily deposit limit has been reached.
+            {
+                DateTime resetTime = user.DepositStartTime.AddHours(24);
+                TimeSpan timeUntilReset = resetTime - DateTime.Now;
+                // We calculate how much time is left until the daily deposit limit resets
+
+                Console.WriteLine($"You have reached your daily deposit limit of ${DailyLimit:N2} AUD");
+                Console.WriteLine($"Time remaining until daily limit resets: {timeUntilReset.Hours} hours and {timeUntilReset.Minutes} minutes.");
+                Console.WriteLine("\nPress any key to return to the Main Screen...");
+                Console.ReadKey();
+                // We inform the user that has reached the daily limit and display the time until reset and ask to press a key to continue using interpolated strings [$].
+
+                return;
+                // We terminate the loop.
+            }
+            Console.Write("Enter the deposit amount (numbers only): $");
+            string userInput = Console.ReadLine()?.Trim();
+            // We prompt the user to enter the deposit amount using numbers only and store the input trimming extra spaces in the new string.
+
+            if (!decimal.TryParse(userInput, out decimal depositAmount) || depositAmount <= 0)
+            // We validate that the input is a valid positive decimal number.
+            {
+                Console.WriteLine("Invalid deposit amount. Please enter a valid positive number.");
+                Console.WriteLine("\nPress any key to try again...");
+                Console.ReadKey();
+                // We inform the user that the entered amount is invalid and ask to press a key to continue.
+
+                continue;
+                // We continue the loop until the user has entered a valid input.
+            }
+            if (depositAmount > TransactionLimit)
+            // We check if the deposit exceeds the maximum transaction limit.
+            {
+                Console.Clear();
+                Console.WriteLine($"Deposit exceeds the transaction limit of ${TransactionLimit:N2} AUD.");
+                Console.WriteLine("\nIf you wish to make a higher deposit, please visit your closest bank branch and bring your ID.");
+                Console.WriteLine("Alternatively, you can call the bank for assistance: +61 07 999 888.");
+                Console.WriteLine("\nPress any key to try again...");
+                Console.ReadKey();
+                // We clear the screen, inform the user the deposit amount exceeds the limit, advice to visit a bank branch or call if needs to deposit a higher amount and ask to press a key to continue.
+
+                continue;
+                // Same as above.
+            }
+            if (user.DailyDepositTotal + depositAmount > DailyLimit)
+            // We check if the deposit amount would exceed the daily deposit limit.
+            {
+                Console.WriteLine($"Deposit exceeds the daily limit of ${DailyLimit:N2} AUD");
+                Console.WriteLine("\nPress any key to try again...");
+                Console.ReadKey();
+                // We inform the user that the deposit exceeds the daily limit and ask to press a key to try again.
+
+                continue;
+                // Same as above.
+            }
+            user.Balance += depositAmount;
+            user.DailyDepositTotal += depositAmount;
+            user.SessionDepositCount++;
+            // If the deposit amount is valid, we update the user's [Balance] in the Dictionary, add the amount to the [DailyDepositTotal] and add 1 to the [SessionDepositCount].
+
+            Console.Clear();
+            Console.WriteLine($"Deposit successful! Your new balance is: ${user.Balance:N2}");
+            Console.WriteLine($"\nRemaining daily deposit limit: ${DailyLimit - user.DailyDepositTotal:N2} AUD");
+            Console.WriteLine($"Remaining deposits for this session: {MaxDepositsPerSession - user.SessionDepositCount} deposits");
+            Console.WriteLine("\nPress any key to return to the Main Screen...");
+            Console.ReadKey();
+            // We clear the console, confirm the successful deposit, display remaining daily deposit limit, remaining deposits for the current session and ask to press a key to continue.
+
+            return;
+            // We terminate the loop.
+        }
+    }
     private void UpdateDetails(string inputUsername)
     // We create the UpdateDetails method for the logged in user [inputUsername].
     {
         Console.Clear();
         var user = users[inputUsername];
+
+        Console.Clear();
+        Console.WriteLine("Your current details:\n_______________________________\n");
         /*            
         We clear the Main Screen and move onto the Update Details screen.
         We create a variable [user] that will retrieve the user details of the current user [inputUsername] and store them in the variable itself.
@@ -615,12 +784,17 @@ class Bank
         public string Email { get; set; }
         public string Phone { get; set; }
         public string Password { get; set; }
+        public decimal Balance { get; set; }
+        public decimal DailyDepositTotal { get; set; }
+        public int SessionDepositCount { get; set; }
+        public bool ReachedSessionLimit { get; set; }
+        public DateTime DepositStartTime { get; set; } = DateTime.MinValue;
+
         /*
-        This class contains 6 public properties each with [get] and [set] accessors.
+        This class contains 11 public properties each with [get] and [set] accessors.
         This will allow the code to retrieve/modify properties' values.
         */
-
-        public UserDetails(string prefix, string fullName, int age, string email, string phone, string password)
+        public UserDetails(string prefix, string fullName, int age, string email, string phone, string password, decimal balance = 0.0m)
         /*
         We define a constructor that will initialize a new [UserDetails] object with specific values.
         The values are listed below.
@@ -632,7 +806,11 @@ class Bank
             Email = email;
             Phone = phone;
             Password = password;
+            Balance = balance;
+            DailyDepositTotal = 0;
+            SessionDepositCount = 0;
+            ReachedSessionLimit = false;
+            DepositStartTime = DateTime.MinValue;
         }
     }
 }
-//End of the program.
