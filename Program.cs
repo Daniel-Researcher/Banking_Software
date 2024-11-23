@@ -354,7 +354,8 @@ class Bank
                 */
                 {
                     users[inputUsername].SessionDepositCount = 0;
-                    // We reset the deposit limit per session after the user logs-out and logs back in.
+                    users[inputUsername].SessionWithdrawCount = 0;
+                    // We reset the deposits/withdraws per session counter after the user logs-out and logs back in.
 
                     MainScreen(inputUsername);
                     isLoggedIn = true;
@@ -417,11 +418,11 @@ class Bank
 
             Console.WriteLine("1. View balance");
             Console.WriteLine("2. Make a deposit");
-            Console.WriteLine("3. Withdraw money (coming soon)");
+            Console.WriteLine("3. Withdraw money");
             Console.WriteLine("4. Make a bank transfer (coming soon)");
             Console.WriteLine("5. Update personal details");
             Console.WriteLine("6. Log-out");
-            // We display the Main Screen and the available options (only 5 and 6 work).
+            // We display the Main Screen and the available options.
 
             Console.Write("_______________________________\nPlease choose an option: ");
             // We prompt user to pick an option.
@@ -451,6 +452,13 @@ class Bank
                     break;
 
                 case "3":
+                    Withdraw(inputUsername);
+                    /*
+                    If user picks option [3] we call the [Withdraw] method.
+                    This method is explained later on, please see line number: 513.
+                    */
+
+                    break;
                 case "4":
                     Console.WriteLine("\nFeature coming soon!");
                     // For options from 3-4 we notify user that the feature is not yet available.
@@ -516,10 +524,11 @@ class Bank
         const decimal TransactionLimit = 15000m;
         const decimal DailyLimit = 100000m;
         const int MaxDepositsPerSession = 5;
-        // We create 3 constants that establish a Transaction Limit, Daily Limit and Max. Deposits per Session.
-
         var user = users[inputUsername];
-        // We create a variable [user] that will retrieve the user details of the current user [inputUsername] and store them in the variable itself.
+        /*
+        We create 3 constants that establish a Transaction Limit, Daily Limit and Max. Deposits per Session.
+        We create a variable [user] that will retrieve the user details of the current user [inputUsername] and store them in the variable itself.
+        */
 
         if (user.DepositStartTime == DateTime.MinValue || DateTime.Now >= user.DepositStartTime.AddHours(24))
         // We check if the DepositStartTime has not been set (i.e., it's still the default value).
@@ -541,14 +550,14 @@ class Bank
         Console.ReadKey();
         // We clear the screen and display a disclaimer with the deposit limits and ask the user to acknowledge using interpolated strings [$] and press a key to continue.
 
-        if (user.SessionDepositCount >= MaxDepositsPerSession)
-        // We check if the user has reached the maximum number of deposits for the current session
+        if (user.ReachedSessionLimit("Deposit"))
+        // We check if the user has reached the maximum number of deposits for the current session.
         {
             Console.Clear();
             Console.WriteLine($"You have reached the maximum number of deposits ({MaxDepositsPerSession}) for this session.\nPlease log-out to reset your counter.");
             Console.WriteLine("\nPress any key to return to the Main Screen...");
             Console.ReadKey();
-            // We clear the screen, inform the user that has exceeded the maximum deposit count for this session, advice to logout to reset the counter and ask to press a key to continue using interpolated strings [$].
+            // We clear the screen, inform the user that has reached the deposits limit for the current session, advice to logout to reset the counter and ask to press a key to continue using interpolated strings [$].
 
             return;
             // We terminate the loop.
@@ -556,13 +565,15 @@ class Bank
         while (true)
         {
             decimal remainingDailyLimit = DailyLimit - user.DailyDepositTotal;
-            int remainingSessionDeposits = MaxDepositsPerSession - user.SessionDepositCount;
-            // We calculate the remaining daily deposit limit for the user and how many more deposits the user can make in this session.
+            // We calculate the remaining daily deposit limit for the user.
 
             Console.Clear();
+            Console.WriteLine("Make a deposit:\nEnter '0' at any time to return to the Main Screen.\n_______________________________\n");
+            Console.WriteLine($"Your current balance is: ${user.Balance:N2} AUD.");
+            Console.WriteLine($"Maximum transaction limit per deposit: ${TransactionLimit:N2} AUD");
             Console.WriteLine($"Remaining daily deposit limit: ${remainingDailyLimit:N2} AUD");
-            Console.WriteLine($"Remaining deposits for this session: {remainingSessionDeposits} deposits\n_______________________________\n");
-            // We clear the screen for the user and display remaining deposit limit and deposits for this session using interpolated strings [$].
+            Console.WriteLine($"You have {MaxDepositsPerSession - user.SessionDepositCount} deposits remaining.\n_______________________________\n");
+            // We clear the screen for the user, display option to exit, current balance, transaction limit per deposit, remaining deposit limit and remaining deposits for this session using interpolated strings [$].
 
             if (remainingDailyLimit <= 0)
             // We check if the daily deposit limit has been reached.
@@ -584,6 +595,17 @@ class Bank
             string userInput = Console.ReadLine()?.Trim();
             // We prompt the user to enter the deposit amount using numbers only and store the input trimming extra spaces in the new string.
 
+            if (userInput == "0")
+            // We check if the user input is zero [0].
+            {
+                Console.WriteLine("\nReturning to the Main Screen...");
+                Console.ReadKey();
+                // We show a message informing the user that will be returned to the Main Screen.
+
+                return;
+                // We terminate the loop.
+            }
+
             if (!decimal.TryParse(userInput, out decimal depositAmount) || depositAmount <= 0)
             // We validate that the input is a valid positive decimal number.
             {
@@ -604,7 +626,7 @@ class Bank
                 Console.WriteLine("Alternatively, you can call the bank for assistance: +61 07 999 888.");
                 Console.WriteLine("\nPress any key to try again...");
                 Console.ReadKey();
-                // We clear the screen, inform the user the deposit amount exceeds the limit, advice to visit a bank branch or call if needs to deposit a higher amount and ask to press a key to continue.
+                // We clear the screen, inform the user the deposit amount exceeds the limit, advice to visit a bank branch or call if needs to deposit a higher amount and ask to press a key to try again.
 
                 continue;
                 // Same as above.
@@ -623,7 +645,12 @@ class Bank
             user.Balance += depositAmount;
             user.DailyDepositTotal += depositAmount;
             user.SessionDepositCount++;
-            // If the deposit amount is valid, we update the user's [Balance] in the Dictionary, add the amount to the [DailyDepositTotal] and add 1 to the [SessionDepositCount].
+            /* 
+            If the deposit amount is valid:
+            We update the user's [Balance] in the Dictionary by adding the [depositAmount] amount to it,
+            we update the [DailyDepositTotal] doing the same,
+            and we add 1 to the [SessionDepositCount].
+            */
 
             Console.Clear();
             Console.WriteLine($"Deposit successful! Your new balance is: ${user.Balance:N2}");
@@ -631,7 +658,93 @@ class Bank
             Console.WriteLine($"Remaining deposits for this session: {MaxDepositsPerSession - user.SessionDepositCount} deposits");
             Console.WriteLine("\nPress any key to return to the Main Screen...");
             Console.ReadKey();
-            // We clear the console, confirm the successful deposit, display remaining daily deposit limit, remaining deposits for the current session and ask to press a key to continue.
+            // We clear the console, confirm the successful deposit, display new balance, remaining daily deposit limit, remaining deposits for the current session and ask to press a key to return to the Main Screen.
+
+            return;
+            // We terminate the loop.
+        }
+    }
+    private void Withdraw(string inputUsername)
+    // We create the Withdraw method for the logged in user [inputUsername].
+    {
+        const int MaxWithdrawsPerSession = 5;
+        var user = users[inputUsername];
+        /*
+        We create a constant that establish Max. Deposits per Session.
+        We create a variable [user] that will retrieve the user details of the current user [inputUsername] and store them in the variable itself.
+        */
+
+        if (user.ReachedSessionLimit("Withdraw"))
+        // We check if the user has reached the maximum number of withdraws for the current session.
+        {
+            Console.Clear();
+            Console.WriteLine($"You have reached the maximum number of withdraws ({MaxWithdrawsPerSession}) for this session.\nPlease log-out to reset your counter.");
+            Console.WriteLine("\nPress any key to return to the Main Screen...");
+            Console.ReadKey();
+            // We clear the screen, inform the user that has reached the withdraws limit for the current session, advice to logout to reset the counter and ask to press a key to continue using interpolated strings [$].
+
+            return;
+            // We terminate the loop.
+        }
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine("Withdraw money:\nEnter '0' at any time to return to the Main Screen.\n_______________________________\n");
+            Console.WriteLine($"Your current balance is: ${user.Balance:N2} AUD.");
+            Console.WriteLine($"You have {MaxWithdrawsPerSession - user.SessionWithdrawCount} withdrawals remaining.\n_______________________________");
+            Console.WriteLine();
+            // We clear the screen for the user, display option to exit, current balance and remaining withdraws for this session using interpolated strings [$].
+
+            Console.Write("Enter the amount to withdraw (numbers only): $");
+            string userInput = Console.ReadLine()?.Trim();
+            // We prompt the user to enter the withdraw amount using numbers only and store the input trimming extra spaces in the new string
+
+            if (userInput == "0")
+            // We check if the user input is zero [0].
+            {
+                Console.WriteLine("\nReturning to the Main Screen...");
+                Console.ReadKey();
+                // We show a message informing the user that will be returned to the Main Screen.
+
+                return;
+                // We terminate the loop.
+            }
+            if (!decimal.TryParse(userInput, out decimal withdrawAmount) || withdrawAmount <= 0)
+            // We validate that the input is a valid positive decimal number.
+            {
+                Console.WriteLine("\nInvalid withdraw amount. Please enter a valid positive number.");
+                Console.WriteLine("Press any key to try again...");
+                Console.ReadKey();
+                // We inform the user that the entered amount is invalid and ask to press a key to continue.
+
+                continue;
+                // We continue the loop until the user has entered a valid input.
+            }
+            if (withdrawAmount > user.Balance)
+            // We check if the withdraw amount exceeds the available balance.
+            {
+                Console.WriteLine("\nYour funds are insufficient.");
+                Console.WriteLine("Press any key to try again...");
+                Console.ReadKey();
+                // We inform the user the withdraw amount is higher than the available balance and ask to press a key to try again.
+
+                continue;
+                // Same as above.
+            }
+            user.Balance -= withdrawAmount;
+            user.SessionWithdrawCount++;
+            /*
+            If the withdraw amount is valid:
+            we update the user's [Balance] in the Dictionary by deducting the [withdrawAmount] from it,
+            and we add 1 to the [SessionWithdrawCount].
+            */
+
+            Console.Clear();
+            Console.WriteLine($"Withdrawal successful! Your new balance is: ${user.Balance:N2}"));
+            Console.WriteLine($"\nRemaining withdrawals for this session: {MaxWithdrawsPerSession - user.SessionWithdrawCount}");
+            Console.WriteLine("\nPress any key to return to the Main Screen...");
+            Console.ReadKey();
+            // We clear the console, confirm the successful withdrawal, display new balance, remaining withdrawals for the current session and ask to press a key to return to the Main Screen.
 
             return;
             // We terminate the loop.
@@ -787,13 +900,26 @@ class Bank
         public decimal Balance { get; set; }
         public decimal DailyDepositTotal { get; set; }
         public int SessionDepositCount { get; set; }
-        public bool ReachedSessionLimit { get; set; }
+        public int SessionWithdrawCount { get; set; }
+
+        public const int MaxDepositsPerSession = 5;
+
+        public const int MaxWithdrawsPerSession = 5;
         public DateTime DepositStartTime { get; set; } = DateTime.MinValue;
 
         /*
-        This class contains 11 public properties each with [get] and [set] accessors.
+        This class contains 13 public properties each with [get] and [set] accessors.
         This will allow the code to retrieve/modify properties' values.
         */
+        public bool ReachedSessionLimit(string transactionType)
+        {
+            return transactionType switch
+            {
+                "Deposit" => SessionDepositCount >= MaxDepositsPerSession,
+                "Withdraw" => SessionWithdrawCount >= MaxWithdrawsPerSession,
+                _ => throw new ArgumentException("Invalid transaction type", nameof(transactionType))
+            };
+        }
         public UserDetails(string prefix, string fullName, int age, string email, string phone, string password, decimal balance = 0.0m)
         /*
         We define a constructor that will initialize a new [UserDetails] object with specific values.
@@ -809,7 +935,7 @@ class Bank
             Balance = balance;
             DailyDepositTotal = 0;
             SessionDepositCount = 0;
-            ReachedSessionLimit = false;
+            SessionWithdrawCount = 0;
             DepositStartTime = DateTime.MinValue;
         }
     }
