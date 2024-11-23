@@ -740,7 +740,7 @@ class Bank
             */
 
             Console.Clear();
-            Console.WriteLine($"Withdrawal successful! Your new balance is: ${user.Balance:N2}"));
+            Console.WriteLine($"Withdrawal successful! Your new balance is: ${user.Balance:N2}");
             Console.WriteLine($"\nRemaining withdrawals for this session: {MaxWithdrawsPerSession - user.SessionWithdrawCount}");
             Console.WriteLine("\nPress any key to return to the Main Screen...");
             Console.ReadKey();
