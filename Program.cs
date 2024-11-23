@@ -763,7 +763,6 @@ class Bank
         We create a variable [user] that will retrieve the user details of the current user [inputUsername] and store them in the variable itself.
         */
 
-        Console.WriteLine("Your current details:\n");
         Console.WriteLine($"Prefix: {user.Prefix}");
         Console.WriteLine($"Name: {user.FullName}");
         Console.WriteLine($"Age: {user.Age}");
