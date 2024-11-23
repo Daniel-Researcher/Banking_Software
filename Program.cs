@@ -903,23 +903,28 @@ class Bank
         public int SessionWithdrawCount { get; set; }
 
         public const int MaxDepositsPerSession = 5;
-
         public const int MaxWithdrawsPerSession = 5;
-        public DateTime DepositStartTime { get; set; } = DateTime.MinValue;
 
-        /*
-        This class contains 13 public properties each with [get] and [set] accessors.
-        This will allow the code to retrieve/modify properties' values.
-        */
+        public DateTime DepositStartTime { get; set; } = DateTime.MinValue;
         public bool ReachedSessionLimit(string transactionType)
+        // We use a switch expression to handle different transaction types.
         {
             return transactionType switch
             {
                 "Deposit" => SessionDepositCount >= MaxDepositsPerSession,
                 "Withdraw" => SessionWithdrawCount >= MaxWithdrawsPerSession,
                 _ => throw new ArgumentException("Invalid transaction type", nameof(transactionType))
+                /*
+                If the transaction type is [Deposit], we check if the [SessionDepositCount] has reached or exceeded the [MaxDepositsPerSession] limit.
+                If the transaction type is [Withdraw], we check if the [SessionWithdrawCount] has reached or exceeded the [MaxWithdrawsPerSession] limit
+                If the transaction type is neither [Deposit] nor [Withdraw], we throw an exception. This ensures that only valid transaction types are passed to the method.
+                */
             };
         }
+        /*
+        This class contains 13 public properties each with [get] and [set] accessors and a boolean to handle different transaction types.
+        This will allow the code to retrieve/modify properties' values.
+        */
         public UserDetails(string prefix, string fullName, int age, string email, string phone, string password, decimal balance = 0.0m)
         /*
         We define a constructor that will initialize a new [UserDetails] object with specific values.
