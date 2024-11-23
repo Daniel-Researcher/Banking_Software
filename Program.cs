@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -682,7 +682,7 @@ class Bank
             Console.WriteLine("\nPress any key to return to the Main Screen...");
             Console.ReadKey();
             // We clear the screen, inform the user that has reached the withdraws limit for the current session, advice to logout to reset the counter and ask to press a key to continue using interpolated strings [$].
-
+            
             return;
             // We terminate the loop.
         }
