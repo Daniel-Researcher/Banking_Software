@@ -155,7 +155,7 @@ class Bank
             if (ValidateFullName(fullName)) break;
             /*
             We call the method [ValidateFullName] which checks whether fullName variable meets the criteria or not.
-            This method is explained later on, please see line number: 673.
+            This method is explained later on, please see line number: 785.
             If the name meets the criteria, we exit the loop and proceed to the next one.
             */
 
@@ -203,7 +203,7 @@ class Bank
             if (IsValidEmail(email)) break;
             /*
             We call the method [IsValidEmail] which checks whether email variable meets the criteria or not.
-            This method is explained later on, please see line number: 689.
+            This method is explained later on, please see line number: 801.
             If the email meets the criteria, we exit the loop and proceed to the next one.
             */
 
@@ -279,7 +279,7 @@ class Bank
             if (IsValidPassword(password)) break;
             /*
             We call the method [IsValidPassword] which checks whether password variable meets the criteria or not.
-            This method is explained later on, please see line number: 717.
+            This method is explained later on, please see line number: 829.
             If the password meets the criteria, we exit the loop and proceed to the next one.
             */
 
@@ -437,7 +437,7 @@ class Bank
                     ViewBalance(inputUsername);
                     /*
                     If user picks option [1] we call the [ViewBalance] method.
-                    This method is explained later on, please see line number: 494.
+                    This method is explained later on, please see line number: 502.
                     */
 
                     break;
@@ -446,7 +446,7 @@ class Bank
                     MakeDeposit(inputUsername);
                     /*
                     If user picks option [2] we call the [MakeDeposit] method.
-                    This method is explained later on, please see line number: 513.
+                    This method is explained later on, please see line number: 521.
                     */
 
                     break;
@@ -455,7 +455,7 @@ class Bank
                     Withdraw(inputUsername);
                     /*
                     If user picks option [3] we call the [Withdraw] method.
-                    This method is explained later on, please see line number: 513.
+                    This method is explained later on, please see line number: 667.
                     */
 
                     break;
@@ -476,7 +476,7 @@ class Bank
                     UpdateDetails(inputUsername);
                     /*
                     If user picks option [5] we call the [UpdateDetails] method.
-                    This method is explained later on, please see line number: 640.
+                    This method is explained later on, please see line number: 753.
                     */
 
                     break;
