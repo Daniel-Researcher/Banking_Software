@@ -609,7 +609,7 @@ class Bank
             if (!decimal.TryParse(userInput, out decimal depositAmount) || depositAmount <= 0)
             // We validate that the input is a valid positive decimal number.
             {
-                Console.WriteLine("Invalid deposit amount. Please enter a valid positive number.");
+                Console.WriteLine("\nInvalid input. Please ONLY enter positive numeric digits.");
                 Console.WriteLine("\nPress any key to try again...");
                 Console.ReadKey();
                 // We inform the user that the entered amount is invalid and ask to press a key to continue.
@@ -712,7 +712,7 @@ class Bank
             if (!decimal.TryParse(userInput, out decimal withdrawAmount) || withdrawAmount <= 0)
             // We validate that the input is a valid positive decimal number.
             {
-                Console.WriteLine("\nInvalid withdraw amount. Please enter a valid positive number.");
+                Console.WriteLine("\nInvalid input. Please ONLY enter positive numeric digits.");
                 Console.WriteLine("Press any key to try again...");
                 Console.ReadKey();
                 // We inform the user that the entered amount is invalid and ask to press a key to continue.
