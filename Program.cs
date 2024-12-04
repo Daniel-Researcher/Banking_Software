@@ -385,8 +385,8 @@ class Bank
                     // Once the user has exhausted the attempts...
                     {
                         Console.Clear();
-                        Console.WriteLine("| Error 404: Login unsuccessful |\nPlease call the bank for assistance: +61 07 999 888.");
-                        Console.WriteLine("\nPress any key to return to the Welcome Screen...");
+                        Console.WriteLine("| Error 404: Login unsuccessful |\n\nPlease call the bank for assistance: +61 07 999 888.");
+                        Console.WriteLine("Press any key to return to the Welcome Screen...");
                         Console.ReadKey();
                         DisplayWelcomeScreen();
                         /* 
